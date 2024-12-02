@@ -1,0 +1,39 @@
+import os
+import shutil
+import random
+
+# Define paths
+train_images_dir = 'haston-home/images/train'
+val_images_dir = 'haston-home/images/val'
+train_labels_dir = 'haston-home/labels/train'
+val_labels_dir = 'haston-home/labels/val'
+
+# Create val directories if they don't exist
+os.makedirs(val_images_dir, exist_ok=True)
+os.makedirs(val_labels_dir, exist_ok=True)
+
+# Get list of all image files in the train directory
+image_files = [f for f in os.listdir(train_images_dir) if os.path.isfile(os.path.join(train_images_dir, f))]
+
+# Shuffle the list of image files
+random.shuffle(image_files)
+
+# Split the list in half
+split_index = len(image_files) // 2
+val_image_files = image_files[:split_index]
+
+# Move images and corresponding labels to val directory
+for image_file in val_image_files:
+    # Move image file
+    src_image_path = os.path.join(train_images_dir, image_file)
+    dest_image_path = os.path.join(val_images_dir, image_file)
+    shutil.move(src_image_path, dest_image_path)
+
+    # Move corresponding label file
+    label_file = os.path.splitext(image_file)[0] + '.txt'
+    src_label_path = os.path.join(train_labels_dir, label_file)
+    dest_label_path = os.path.join(val_labels_dir, label_file)
+    if os.path.exists(src_label_path):
+        shutil.move(src_label_path, dest_label_path)
+
+print(f"Moved {len(val_image_files)} images and their labels to the val folder.")

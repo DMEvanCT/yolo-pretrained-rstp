@@ -1,0 +1,7 @@
+.env
+venv/
+output_frames/
+dataset/
+animals/
+.DS_Store/
+.env.train
