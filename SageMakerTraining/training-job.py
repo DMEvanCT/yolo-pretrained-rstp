@@ -19,7 +19,7 @@ estimator = sagemaker.estimator.Estimator(
     image_uri=image_uri,
     role=role,
     instance_count=1,
-    instance_type='ml.m5.xlarge',
+    instance_type=instance_type,
     output_path=output_path,
 )
 

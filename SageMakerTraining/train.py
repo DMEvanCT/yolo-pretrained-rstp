@@ -6,6 +6,7 @@ import torch
 device = "cpu"
 # check if GPU is available
 if torch.cuda.is_available():
+    print("GPU is available")
     device = "1"
 
 
