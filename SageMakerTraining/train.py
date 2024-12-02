@@ -15,7 +15,7 @@ model = YOLO("yolov8m.yaml")  # Replace with YOLOv10 pretrained weights if avail
 # Train the model
 model.train(
     data="/opt/ml/input/data/all/data.yaml",  # SageMaker path for input data
-    epochs=100,
+    epochs=300,
     imgsz=640,
     batch=16,
     workers=8,

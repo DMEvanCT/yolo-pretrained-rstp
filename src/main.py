@@ -6,6 +6,7 @@ import time
 from dotenv import load_dotenv
 import threading
 import logging
+from notification.slack import SlackNotifier
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -24,84 +25,8 @@ CONFIDENCE_THRESHOLD = os.getenv("CONFIDENCE_THRESHOLD", 0.5)
 # mps for mac cuda for nvidia and cpu for none
 INFERENCE_DEVICE = os.getenv("INFERENCE_DEVICE", "cpu")
 
-def upload_image_to_slack(image_path, channel_id, token, text=None):
-    """
-    Upload an image to a Slack channel using the new Slack API methods.
+slack_notifier = SlackNotifier(SLACK_WEBHOOK_URL, X_APP_BEARER_TOKEN, SLACK_CHANNEL)
 
-    Args:
-        image_path (str): Path to the image file to upload.
-        channel_id (str): Slack channel ID to upload the image to.
-        token (str): Slack Bot User OAuth Token.
-        text (str, optional): Initial comment to accompany the image.
-
-    Returns:
-        dict: Response from Slack API with upload details.
-    """
-    try:
-        # Step 1: Get the upload URL
-        file_size = os.path.getsize(image_path)
-        file_name = os.path.basename(image_path)
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
-        params = {
-            "filename": file_name,
-            "length": file_size
-        }
-        response = requests.get(
-            "https://slack.com/api/files.getUploadURLExternal",
-            headers=headers,
-            params=params
-        )
-        response_data = response.json()
-        if not response_data.get("ok"):
-            logger.info("Failed to get upload URL:", response_data.get("error"))
-            return response_data
-
-        upload_url = response_data["upload_url"]
-        file_id = response_data["file_id"]
-
-        # Step 2: Upload the file
-        with open(image_path, "rb") as file_content:
-            upload_response = requests.post(
-                upload_url,
-                files={"file": file_content}
-            )
-        if upload_response.status_code != 200:
-            logger.info("Failed to upload file:", upload_response.text)
-            return {"ok": False, "error": upload_response.text}
-
-        # Step 3: Complete the upload
-        complete_payload = {
-            "files": [
-                {
-                    "id": file_id,
-                    "title": file_name
-                }
-            ],
-            "channel_id": channel_id,
-            "initial_comment": text or ""
-        }
-        complete_response = requests.post(
-            "https://slack.com/api/files.completeUploadExternal",
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json"
-            },
-            json=complete_payload
-        )
-        complete_data = complete_response.json()
-        if complete_data.get("ok"):
-            logger.info(f"Image uploaded successfully! File ID: {file_id}")
-        else:
-            logger.info("Failed to complete upload:", complete_data.get("error"))
-        return complete_data
-
-    except Exception as e:
-        logger.info("An error occurred:", str(e))
-        return {"ok": False, "error": str(e)}
-
-# Load the YOLO model
 try:
     model = YOLO("yolov11-coco.pt")  # Replace with your model file
     logger.info("YOLO model loaded successfully.")
@@ -171,7 +96,7 @@ while True:
             logger.info(f"Target class detected! Saved frame {detected_count} to {output_path}")
             if NOTIFY_SLACK == "true" and detected_count < int(MAX_COUNT_CAPTURE):
                 logger.info(NOTIFY_SLACK)
-                upload_image_to_slack(output_path, SLACK_CHANNEL, X_APP_BEARER_TOKEN, text=f"Target class detected: {class_name}!")
+                slack_notifier.upload_image_to_slack(output_path, text=f"Target class detected: {class_name}!")
             detected_count += 1
 
             # Reset detected count after RESET_CAPTURE_COUNT_TIMER seconds
@@ -243,7 +168,7 @@ def process_stream(rtsp_url):
                 logger.info(f"Target class detected! Saved frame {detected_count} to {output_path}")
                 if NOTIFY_SLACK == "true" and detected_count < int(MAX_COUNT_CAPTURE):
                     logger.info(NOTIFY_SLACK)
-                    upload_image_to_slack(output_path, SLACK_CHANNEL, X_APP_BEARER_TOKEN, text=f"Target class detected: {class_name}!")
+                    slack_notifier.upload_image_to_slack(output_path, text=f"Target class detected: {class_name}!")
                 detected_count += 1
 
                 # Reset detected count after RESET_CAPTURE_COUNT_TIMER seconds
