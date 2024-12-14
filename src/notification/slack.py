@@ -17,8 +17,7 @@ class SlackNotifier:
         Args:
             image_path (str): Path to the image file to upload.
             channel_id (str): Slack channel ID to upload the image to.
-            token (str): Slack Bot User OAuth Token.
-            text (str, optional): Initial comment to accompany the image.
+            token (str, optional): Initial comment to accompany the image.
 
         Returns:
             dict: Response from Slack API with upload details.

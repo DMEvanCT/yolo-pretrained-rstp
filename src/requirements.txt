@@ -3,3 +3,5 @@ opencv-python-headless
 matplotlib
 requests
 python-dotenv
+cvzone
+boto3

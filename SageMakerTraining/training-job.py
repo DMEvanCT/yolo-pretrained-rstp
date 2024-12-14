@@ -2,9 +2,8 @@ import sagemaker
 from dotenv import load_dotenv
 import os
 
-load_dotenv(dotenv_path=".env.train")
+load_dotenv()
 # Replace with your bucket and dataset paths
-
 
 bucket = os.getenv("S3_BUCKET")
 dataset_path = os.getenv("DATASET_PATH")
@@ -21,6 +20,9 @@ estimator = sagemaker.estimator.Estimator(
     instance_count=1,
     instance_type=instance_type,
     output_path=output_path,
+    use_spot_instances=True,
+    max_wait=3600,  # Maximum wait time for spot instances in seconds
+    max_run=3600    # Maximum run time for the training job in seconds
 )
 
 # Define input channels

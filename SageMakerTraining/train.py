@@ -7,16 +7,16 @@ device = "cpu"
 # check if GPU is available
 if torch.cuda.is_available():
     print("GPU is available")
-    device = "1"
+    device = 0
 
 
 # Load YOLO model
-model = YOLO("yolov8m.yaml")  # Replace with YOLOv10 pretrained weights if available
+model = YOLO("/opt/ml/code/yolo11m.pt")  # Replace with YOLOv10 pretrained weights if available
 
 # Train the model
 model.train(
     data="/opt/ml/input/data/all/data.yaml",  # SageMaker path for input data
-    epochs=300,
+    epochs=1200,
     imgsz=640,
     batch=16,
     workers=8,

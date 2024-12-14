@@ -6,6 +6,7 @@ RUN pip install --upgrade pip && pip install ultralytics boto3 sagemaker
 
 # Copy training script
 COPY train.py /opt/ml/code/train.py
+COPY yolo11m.pt /opt/ml/code/yolo11m.pt
 
 # Define SageMaker entry point
 ENTRYPOINT ["python", "/opt/ml/code/train.py"]
